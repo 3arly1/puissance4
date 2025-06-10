@@ -3,7 +3,7 @@ import random
 import time
 from board import ROWS, COLS, N_ALIGN, PLAYER, OPPONENT, valid_moves, play_move, undo_move, WIN_PATTERNS, board_hash
 
-MAX_DEPTH = 10
+MAX_DEPTH = 5
 
 transposition_table = {}
 killer_moves = {}
@@ -85,6 +85,24 @@ def minimax_cached(board, depth, alpha, beta, maximizing, start_time, time_limit
         moves.sort(key=lambda x: (x not in killers, abs(center-x)))
     else:
         moves.sort(key=lambda x: abs(center-x))
+
+
+    if maximizing:
+        for col in moves:
+            row = play_move(board, col, PLAYER)
+            if row >= 0 and check_win_fast(board, PLAYER):
+                undo_move(board, col, row)
+                return 10000, col
+            if row >= 0:
+                undo_move(board, col, row)
+    else:
+        for col in moves:
+            row = play_move(board, col, OPPONENT)
+            if row >= 0 and check_win_fast(board, OPPONENT):
+                undo_move(board, col, row)
+                return -10000, col
+            if row >= 0:
+                undo_move(board, col, row)
 
     if maximizing:
         max_eval = -math.inf
